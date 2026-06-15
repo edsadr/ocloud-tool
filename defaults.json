@@ -1,0 +1,138 @@
+{
+  "ingressSecurityRules": [
+    {
+      "description": null,
+      "icmpOptions": null,
+      "isStateless": false,
+      "protocol": "6",
+      "source": "38.225.225.68/32",
+      "sourceType": "CIDR_BLOCK",
+      "tcpOptions": {
+        "destinationPortRange": {
+          "max": 22,
+          "min": 22
+        },
+        "sourcePortRange": null
+      },
+      "udpOptions": null
+    },
+    {
+      "description": null,
+      "icmpOptions": {
+        "code": 4,
+        "type": 3
+      },
+      "isStateless": false,
+      "protocol": "1",
+      "source": "0.0.0.0/0",
+      "sourceType": "CIDR_BLOCK",
+      "tcpOptions": null,
+      "udpOptions": null
+    },
+    {
+      "description": null,
+      "icmpOptions": {
+        "code": null,
+        "type": 3
+      },
+      "isStateless": false,
+      "protocol": "1",
+      "source": "10.0.0.0/16",
+      "sourceType": "CIDR_BLOCK",
+      "tcpOptions": null,
+      "udpOptions": null
+    },
+    {
+      "description": null,
+      "icmpOptions": null,
+      "isStateless": false,
+      "protocol": "6",
+      "source": "38.225.225.68/32",
+      "sourceType": "CIDR_BLOCK",
+      "tcpOptions": {
+        "destinationPortRange": {
+          "max": 80,
+          "min": 80
+        },
+        "sourcePortRange": null
+      },
+      "udpOptions": null
+    },
+    {
+      "description": null,
+      "icmpOptions": null,
+      "isStateless": false,
+      "protocol": "6",
+      "source": "38.225.225.68/32",
+      "sourceType": "CIDR_BLOCK",
+      "tcpOptions": {
+        "destinationPortRange": {
+          "max": 443,
+          "min": 443
+        },
+        "sourcePortRange": null
+      },
+      "udpOptions": null
+    },
+    {
+      "description": null,
+      "icmpOptions": null,
+      "isStateless": false,
+      "protocol": "6",
+      "source": "181.79.84.162/32",
+      "sourceType": "CIDR_BLOCK",
+      "tcpOptions": {
+        "destinationPortRange": {
+          "max": 80,
+          "min": 80
+        },
+        "sourcePortRange": null
+      },
+      "udpOptions": null
+    },
+    {
+      "description": null,
+      "icmpOptions": null,
+      "isStateless": false,
+      "protocol": "6",
+      "source": "181.79.84.162/32",
+      "sourceType": "CIDR_BLOCK",
+      "tcpOptions": {
+        "destinationPortRange": {
+          "max": 443,
+          "min": 443
+        },
+        "sourcePortRange": null
+      },
+      "udpOptions": null
+    },
+    {
+      "description": null,
+      "icmpOptions": null,
+      "isStateless": false,
+      "protocol": "6",
+      "source": "181.79.84.162/32",
+      "sourceType": "CIDR_BLOCK",
+      "tcpOptions": {
+        "destinationPortRange": {
+          "max": 22,
+          "min": 22
+        },
+        "sourcePortRange": null
+      },
+      "udpOptions": null
+    }
+  ],
+  "egressSecurityRules": [
+    {
+      "description": null,
+      "destination": "0.0.0.0/0",
+      "destinationType": "CIDR_BLOCK",
+      "icmpOptions": null,
+      "isStateless": false,
+      "protocol": "all",
+      "tcpOptions": null,
+      "udpOptions": null
+    }
+  ]
+}
