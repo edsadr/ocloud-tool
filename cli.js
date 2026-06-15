@@ -75,6 +75,49 @@ function isOciCliAvailable() {
   }
 }
 
+// Expand ~ to user's home directory
+function expandTilde(filePath) {
+  if (filePath && filePath.startsWith('~')) {
+    const homeDir = os.homedir();
+    return path.join(homeDir, filePath.slice(1));
+  }
+  return filePath;
+}
+
+// Parse OCI INI config file manually to handle custom paths and tilde expansion
+function parseOciConfig(filePath, profileName = 'DEFAULT') {
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`OCI configuration file not found at ${filePath}`);
+  }
+
+  const content = fs.readFileSync(filePath, 'utf-8');
+  const lines = content.split(/\r?\n/);
+  let currentSection = null;
+  const config = {};
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#') || trimmed.startsWith(';')) {
+      continue;
+    }
+    const sectionMatch = trimmed.match(/^\[(.*)\]$/);
+    if (sectionMatch) {
+      currentSection = sectionMatch[1].trim();
+      continue;
+    }
+    if (currentSection === profileName) {
+      const parts = trimmed.split('=');
+      if (parts.length >= 2) {
+        const key = parts[0].trim();
+        const value = parts.slice(1).join('=').trim();
+        config[key] = value;
+      }
+    }
+  }
+
+  return config;
+}
+
 // OciClient Abstraction Interface
 class OciClient {
   async getRules(securityListId) {
@@ -127,11 +170,36 @@ class SdkOciClient extends OciClient {
     if (this.client) return;
 
     console.log('[SDK] Loading OCI Node.js SDK modules...');
-    // Dynamic import to prevent crash/slow startup if modules aren't needed or fail to load
     const common = await import('oci-common');
     const core = await import('oci-core');
 
-    const provider = new common.ConfigFileAuthenticationDetailsProvider();
+    const configFilePath = process.env.OCI_CONFIG_FILE || expandTilde('~/.oci/config');
+    const profileName = process.env.OCI_CONFIG_PROFILE || 'DEFAULT';
+
+    console.log(`[SDK] Reading OCI credentials from ${configFilePath} [profile: ${profileName}]...`);
+    const config = parseOciConfig(configFilePath, profileName);
+
+    if (!config.user || !config.tenancy || !config.fingerprint || !config.key_file || !config.region) {
+      throw new Error(`Invalid or incomplete OCI config profile "${profileName}" in ${configFilePath}. Make sure user, tenancy, fingerprint, key_file, and region are specified.`);
+    }
+
+    const keyPath = expandTilde(config.key_file);
+    if (!fs.existsSync(keyPath)) {
+      throw new Error(`Private key file not found at: ${keyPath} (resolved from key_file: ${config.key_file})`);
+    }
+
+    const privateKeyContent = fs.readFileSync(keyPath, 'utf-8');
+    const region = common.Region.fromRegionId(config.region);
+
+    const provider = new common.SimpleAuthenticationDetailsProvider(
+      config.tenancy,
+      config.user,
+      config.fingerprint,
+      privateKeyContent,
+      config.passphrase || null,
+      region
+    );
+
     this.client = new core.VirtualNetworkClient({ authenticationDetailsProvider: provider });
   }
 
