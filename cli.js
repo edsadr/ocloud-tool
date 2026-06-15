@@ -300,7 +300,7 @@ async function main() {
         process.exit(1);
     }
   } catch (error) {
-    console.error('An error occurred during execution:', error.message);
+    console.error('An error occurred during execution:', error.stack || error.message || error);
     process.exit(1);
   }
 }
