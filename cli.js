@@ -19,8 +19,8 @@ function printUsage() {
 Usage: ocloud-tools <command> [arguments] [options]
 
 Commands:
-  add <ip>      Allow ports 22, 80, and 443 for the specified IP address
-  remove <ip>   Remove all ingress rules for the specified IP address
+  add [ip]      Allow ports 22, 80, and 443 for the specified IP (defaults to current external IP)
+  remove [ip]   Remove all ingress rules for the specified IP (defaults to current external IP)
   reset         Reset all rules to the default status stored in defaults.json
 
 Options:
@@ -39,6 +39,22 @@ function validateAndFormatIP(ipInput) {
     process.exit(1);
   }
   return ipInput.includes('/') ? ipInput : `${ipInput}/32`;
+}
+
+// Fetch external IP address
+async function getExternalIP() {
+  console.log('Detecting external IP address (IPv4)...');
+  try {
+    const response = await fetch('https://api4.ipify.org');
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    const ip = await response.text();
+    const trimmedIp = ip.trim();
+    if (!trimmedIp) throw new Error('Received empty response from IP detection service.');
+    console.log(`Detected external IP: ${trimmedIp}`);
+    return trimmedIp;
+  } catch (error) {
+    throw new Error(`Failed to detect external IP. Please check your internet connection or provide an IP manually. Error: ${error.message}`);
+  }
 }
 
 // Execute command and return output or throw error
@@ -268,12 +284,8 @@ async function main() {
   try {
     switch (command) {
       case 'add': {
-        if (!ipParam) {
-          console.error('Error: Please specify an IP address to add.');
-          printUsage();
-          process.exit(1);
-        }
-        const ip = validateAndFormatIP(ipParam);
+        const ipToValidate = ipParam || await getExternalIP();
+        const ip = validateAndFormatIP(ipToValidate);
         console.log(`Adding rules to allow ports 22, 80, and 443 for ${ip}...`);
 
         const { ingressRules, egressRules } = await client.getRules(securityListId);
@@ -325,12 +337,8 @@ async function main() {
       }
 
       case 'remove': {
-        if (!ipParam) {
-          console.error('Error: Please specify an IP address to remove.');
-          printUsage();
-          process.exit(1);
-        }
-        const ip = validateAndFormatIP(ipParam);
+        const ipToValidate = ipParam || await getExternalIP();
+        const ip = validateAndFormatIP(ipToValidate);
         console.log(`Removing all ingress rules for ${ip}...`);
 
         const { ingressRules, egressRules } = await client.getRules(securityListId);
